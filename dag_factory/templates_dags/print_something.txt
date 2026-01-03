@@ -1,0 +1,50 @@
+from datetime import datetime, timedelta
+
+import pendulum
+
+from airflow import DAG
+
+from airflow.operators.python import PythonOperator
+from airflow.operators.empty import EmptyOperator
+
+
+args = {
+    'owner': '$$OWNER',
+    'start_date': $$START_DATE,
+    'catchup': True,
+    'retries': 3,
+    'retry_delay': timedelta(hours=1),
+    'max_active_runs': 1
+}
+
+
+def print_something() -> None:
+    """
+    Печатает текст.
+
+    :return: `None`
+    """
+    print('$$PRINT')
+
+with DAG(
+        dag_id='$$DAG_ID',
+        schedule_interval='$$SCHEDULE_INTERVAL',
+        default_args=args,
+        tags=$$TAGS,
+        concurrency=1
+) as dag:
+
+    start = EmptyOperator(
+        task_id='start',
+    )
+
+    print_something = PythonOperator(
+        task_id='print_something',
+        python_callable=print_something,
+    )
+
+    end = EmptyOperator(
+        task_id='end',
+    )
+
+    start >> print_something >> end
